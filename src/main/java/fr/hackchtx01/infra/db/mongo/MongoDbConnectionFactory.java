@@ -28,6 +28,7 @@ import fr.hackchtx01.authentication.repository.mongo.OAuth2AuthorizationCodeMong
 import fr.hackchtx01.client.app.repository.mongo.ClientAppMongoConverter;
 import fr.hackchtx01.infra.config.api.Config;
 import fr.hackchtx01.infra.db.Dbs;
+import fr.hackchtx01.site.repository.mongo.SiteMongoConverter;
 import fr.hackchtx01.user.repository.mongo.SecuredUserMongoConverter;
 import fr.hackchtx01.user.repository.mongo.UserMongoConverter;
 
@@ -98,7 +99,8 @@ public class MongoDbConnectionFactory {
 		ClientAppMongoConverter clientAppCodec = new ClientAppMongoConverter(defaultDocumentCodec);
 		OAuth2AuthorizationCodeMongoConverter authCodeCodec = new OAuth2AuthorizationCodeMongoConverter(defaultDocumentCodec);
 		OAuth2AccessTokenMongoConverter accessTokenCodec = new OAuth2AccessTokenMongoConverter(defaultDocumentCodec);
+		SiteMongoConverter siteCodec = new SiteMongoConverter(defaultDocumentCodec);
 		
-		return CodecRegistries.fromCodecs(userCodec, securedUserCodec, clientAppCodec, authCodeCodec, accessTokenCodec);
+		return CodecRegistries.fromCodecs(userCodec, securedUserCodec, clientAppCodec, authCodeCodec, accessTokenCodec, siteCodec);
 	}
 }

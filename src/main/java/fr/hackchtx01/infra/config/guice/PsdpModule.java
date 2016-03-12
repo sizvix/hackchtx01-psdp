@@ -28,6 +28,9 @@ import fr.hackchtx01.infra.rest.error.GlobalExceptionMapper;
 import fr.hackchtx01.root.repository.BuildInfoRepository;
 import fr.hackchtx01.root.repository.properties.BuildInfoPropertiesRepository;
 import fr.hackchtx01.root.resource.RootResource;
+import fr.hackchtx01.site.repository.SiteRepository;
+import fr.hackchtx01.site.repository.mongo.SiteMongoRepository;
+import fr.hackchtx01.site.resource.SiteResource;
 import fr.hackchtx01.user.repository.SecuredUserRepository;
 import fr.hackchtx01.user.repository.UserRepository;
 import fr.hackchtx01.user.repository.mongo.SecuredUserMongoRepository;
@@ -62,6 +65,7 @@ public class PsdpModule extends AbstractModule {
 		bind(AuthorizationResource.class);
 		bind(TokenResource.class);
 		bind(ClientAppResource.class);
+		bind(SiteResource.class);
 		
 		//providers
 		bind(GlobalExceptionMapper.class);
@@ -76,6 +80,8 @@ public class PsdpModule extends AbstractModule {
 		
 		bind(OAuth2AuthorizationCodeRepository.class).to(OAuth2AuthorizationCodeMongoRepository.class);
 		bind(OAuth2AccessTokenRepository.class).to(OAuth2AccessTokenMongoRepository.class);
+		
+		bind(SiteRepository.class).to(SiteMongoRepository.class);
 		
 		bindForLocalHostOnly();
 	}
