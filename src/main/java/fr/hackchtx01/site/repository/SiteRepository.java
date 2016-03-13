@@ -119,8 +119,8 @@ public static final Logger LOGGER = LoggerFactory.getLogger(SiteRepository.class
 	}
 	
 	public final Site findByURL(URI url) {
-		if(url == null){
-			LOGGER.warn("Site URL creation asked with null site ID");
+		if (url == null) {
+			LOGGER.warn("Site URL search asked with null site URL");
 			return null ;
 		}
 		return processFindByURL(url.getHost());

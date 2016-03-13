@@ -23,11 +23,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -58,7 +56,6 @@ public class SiteResource extends RestAPI {
 	/** Currently connected site */
 	private final User connectedUser;
 	private final SiteRepository siteRepo;
-	public static final Logger LOGGER = LoggerFactory.getLogger(SiteResource.class);
 	
 	@Inject
 	public SiteResource(@Named(CONNECTED_USER) User connectedUser, SiteRepository siteRepo) {
@@ -128,16 +125,14 @@ public class SiteResource extends RestAPI {
 	}
 	
 	@GET
-	@Path("/url/{url}")
+	@Path("/url")
 	@ApiOperation(value = "Get site by URL", authorizations = { @Authorization(value = "oauth2", scopes = {})}, notes = "This can only be done by the logged in site.", response = SiteRepresentation.class)
 	@ApiResponses(value = {
 		@ApiResponse(code = 200, message = "Found site"),
 		@ApiResponse(code = 400, message = "Invalid site URL"),
 		@ApiResponse(code = 404, message = "Site not found") })
-	public Response getByURL(@PathParam("url") @ApiParam(value = "Site URL", required = true) String siteURLStr) {
-		System.out.println(siteURLStr);
+	public Response getByURL(@QueryParam("url") @ApiParam(value = "Site URL", required = true) String siteURLStr) {
 		URI url = URI.create(siteURLStr);
-		System.out.println(url.toString());
 		Site foundSite = siteRepo.findByURL(url);
 		ensureFoundSite(foundSite);
 		SiteRepresentation foundSiteRepresentation = new SiteRepresentation(foundSite, getUriInfo());
