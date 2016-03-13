@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.hackchtx01.infra.util.error.ApplicationException;
 import fr.hackchtx01.site.Site;
+import fr.hackchtx01.site.SiteUrl;
 
 public abstract class SiteRepository {
 public static final Logger LOGGER = LoggerFactory.getLogger(SiteRepository.class);
@@ -102,6 +103,19 @@ public static final Logger LOGGER = LoggerFactory.getLogger(SiteRepository.class
 		processDeleteById(siteId);
 	}
 	
+	public final void addUrl(UUID siteId, SiteUrl urlToCreate) {
+		if (siteId == null) {
+			LOGGER.warn("Site URL creation asked with null site ID");
+			return;
+		}
+		if (urlToCreate == null) {
+			LOGGER.warn("Site URL creation asked with null site URL");
+			return;
+		}
+		
+		processAddUrl(siteId, urlToCreate);
+	}
+	
 	/**
 	 * Create a new site
 	 * @param siteToCreate
@@ -125,4 +139,6 @@ public static final Logger LOGGER = LoggerFactory.getLogger(SiteRepository.class
 	 * @param siteId
 	 */
 	protected abstract void processDeleteById(UUID siteId);
+	
+	protected abstract void processAddUrl(UUID siteId, SiteUrl urlToCreate);
 }

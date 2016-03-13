@@ -3,13 +3,16 @@ package fr.hackchtx01.site.repository.mongo;
 import static fr.hackchtx01.infra.db.mongo.MongoDocumentConverter.FIELD_ID;
 import static fr.hackchtx01.infra.db.mongo.MongoIndexEnsurer.SortOrder.ASCENDING;
 import static fr.hackchtx01.site.repository.SiteRepositoryErrorMessage.PROBLEM_CREATION_SITE;
+import static fr.hackchtx01.site.repository.SiteRepositoryErrorMessage.PROBLEM_CREATION_SITE_URL;
 import static fr.hackchtx01.site.repository.SiteRepositoryErrorMessage.PROBLEM_DELETE_SITE;
 import static fr.hackchtx01.site.repository.SiteRepositoryErrorMessage.PROBLEM_READ_SITE;
 import static fr.hackchtx01.site.repository.SiteRepositoryErrorMessage.PROBLEM_UPDATE_SITE;
 import static fr.hackchtx01.site.repository.mongo.SiteMongoConverter.FIELD_URL;
+import static fr.hackchtx01.site.repository.mongo.SiteMongoConverter.FIELD_URLS;
 
 import java.util.UUID;
 
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +28,8 @@ import fr.hackchtx01.infra.db.mongo.MongoDbConnectionFactory;
 import fr.hackchtx01.infra.db.mongo.MongoIndexEnsurer;
 import fr.hackchtx01.infra.util.helper.MongoRepositoryHelper;
 import fr.hackchtx01.site.Site;
+import fr.hackchtx01.site.SiteUrl;
 import fr.hackchtx01.site.repository.SiteRepository;
-import fr.hackchtx01.site.repository.mongo.SiteMongoConverter;
-import fr.hackchtx01.site.repository.mongo.SiteMongoRepository;
 
 @Singleton
 public class SiteMongoRepository extends SiteRepository {
@@ -91,6 +93,20 @@ public class SiteMongoRepository extends SiteRepository {
 			siteCollection.deleteOne(filter);
 		} catch(MongoException e) {
 			MongoRepositoryHelper.handleMongoError(LOGGER, e, PROBLEM_DELETE_SITE);
+		}
+	}
+
+	@Override
+	protected void processAddUrl(UUID siteId, SiteUrl urlToCreate) {
+		//ensure site exists before updating it
+		findSite(siteId);
+		
+		Bson filter = Filters.eq(FIELD_ID, siteId);
+		Document addItem = new Document("$addToSet", new Document(FIELD_URLS, SiteMongoConverter.toDocument(urlToCreate)));
+		try {
+			siteCollection.updateOne(filter, addItem);
+		} catch(MongoException e) {
+			MongoRepositoryHelper.handleMongoError(LOGGER, e, PROBLEM_CREATION_SITE_URL);
 		}
 	}
 }

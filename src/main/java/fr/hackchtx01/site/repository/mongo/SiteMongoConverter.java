@@ -102,7 +102,7 @@ public class SiteMongoConverter extends MongoDocumentConverter<Site> {
 		return urlArray;
 	}
 	
-	private Document toDocument(SiteUrl url) {
+	public static Document toDocument(SiteUrl url) {
 		if (url == null) {
 			return new Document();
 		}

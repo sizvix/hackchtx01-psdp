@@ -13,7 +13,9 @@ public enum SiteRepositoryErrorMessage implements ErrorMessage {
 	/** Error while updating site : %s */
 	PROBLEM_UPDATE_SITE("Error while updating site : %s"),
 	/** Error while deleting site : %s */
-	PROBLEM_DELETE_SITE("Error while deleting site : %s");
+	PROBLEM_DELETE_SITE("Error while deleting site : %s"),
+	/** Error while creating site URL : %s */
+	PROBLEM_CREATION_SITE_URL("Error while creating site URL : %s");
 	
 	private String message;
 	

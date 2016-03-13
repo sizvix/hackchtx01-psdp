@@ -36,8 +36,10 @@ import fr.hackchtx01.infra.rest.RestRepresentation;
 import fr.hackchtx01.infra.rest.error.WebApiException;
 import fr.hackchtx01.infra.util.ResourceUtil;
 import fr.hackchtx01.site.Site;
+import fr.hackchtx01.site.SiteUrl;
 import fr.hackchtx01.site.repository.SiteRepository;
 import fr.hackchtx01.site.representation.SiteRepresentation;
+import fr.hackchtx01.site.representation.SiteUrlRepresentation;
 import fr.hackchtx01.user.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -147,6 +149,25 @@ public class SiteResource extends RestAPI {
 		Site foundSite = findSiteById(siteIdStr);
 		siteRepo.deleteById(foundSite.getId());
 		return Response.ok().build();
+	}
+	
+	@POST
+	@Path("/url/{siteId}")
+	@ApiOperation(value = "Create site URL", authorizations = { @Authorization(value = "oauth2", scopes = {})}, notes = "This will can only be done by the logged in user.")
+	@ApiResponses(value = {
+		@ApiResponse(code = 201, message = "URL created"),
+		@ApiResponse(code = 400, message = "Invalid URL"),
+		@ApiResponse(code = 404, message = "Site not found")})
+	public Response create(@PathParam("siteId") @ApiParam(value = "Site identifier", required = true) String siteIdStr,
+						   @ApiParam(value = "Site Url to create", required = true) SiteUrlRepresentation urlToCreate) {
+		UUID siteId = ResourceUtil.getIdfromParam("siteId", siteIdStr);
+		SiteUrl createdUrl= SiteUrlRepresentation.toSiteUrl(urlToCreate);
+		
+		siteRepo.addUrl(siteId, createdUrl);
+		SiteUrlRepresentation createdSiteUrlRepresentation = new SiteUrlRepresentation(createdUrl);
+		UriBuilder ub = getUriInfo().getAbsolutePathBuilder();
+        URI location = ub.path(siteId.toString()).build();
+		return Response.created(location).entity(createdSiteUrlRepresentation).build();
 	}
 	
 	private Site findSiteById(String siteIdStr) {
