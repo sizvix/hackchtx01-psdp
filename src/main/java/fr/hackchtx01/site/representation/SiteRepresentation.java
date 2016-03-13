@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.slf4j.Logger;
@@ -25,7 +26,6 @@ import fr.hackchtx01.infra.rest.Link;
 import fr.hackchtx01.infra.rest.RestRepresentation;
 import fr.hackchtx01.infra.rest.error.WebApiException;
 import fr.hackchtx01.site.Site;
-import fr.hackchtx01.site.representation.SiteRepresentation;
 import fr.hackchtx01.site.resource.SiteResource;
 
 @XmlRootElement(name = "site")
@@ -40,6 +40,7 @@ public class SiteRepresentation extends RestRepresentation {
 	private LocalDateTime creationDate;
 	/** Last time the site was updated */
 	private LocalDateTime lastUpdate;
+	private List<SiteUrlRepresentation> urls;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SiteRepresentation.class);
 	
@@ -49,11 +50,12 @@ public class SiteRepresentation extends RestRepresentation {
 	
 	/** Test Purpose only */
 	@Deprecated 
-	public SiteRepresentation(UUID id, String name, String url, List<Link> links) {
+	public SiteRepresentation(UUID id, String name, String url, List<SiteUrlRepresentation> urls, List<Link> links) {
 		super(links);
 		this.id = id;
 		this.name = name;
 		this.url = url;
+		this.urls = urls;
 	}
 	
 	public SiteRepresentation(Site site, UriInfo uriInfo) {
@@ -67,6 +69,7 @@ public class SiteRepresentation extends RestRepresentation {
 		this.url = site.getUrl().toString();
 		this.creationDate = site.getCreationDate();
 		this.lastUpdate = site.getLastUpdate();
+		this.urls = SiteUrlRepresentation.extractUrlsRepresentations(site.getUrls());
 	}
 	
 	public static Site toSite(SiteRepresentation representation) {
@@ -74,7 +77,8 @@ public class SiteRepresentation extends RestRepresentation {
 		
 		Site.Builder siteBuilder = Site.Builder.createDefault()
 						   .withName(representation.name)
-						   .withUrl(URI.create(representation.url));
+						   .withUrl(URI.create(representation.url))
+						   .withUrls(SiteUrlRepresentation.toUrls(representation.getUrls()));
 		//if no ID provided, we let the default one
 		if (representation.id != null) {
 			siteBuilder.withId(representation.id);
@@ -104,6 +108,12 @@ public class SiteRepresentation extends RestRepresentation {
 	@XmlElement(name = "url")
 	public String getUrl() {
 		return url;
+	}
+	
+	@XmlElementWrapper(name = "urls")
+	@XmlElement(name = "url")
+	public List<SiteUrlRepresentation> getUrls() {
+		return urls;
 	}
 	
 	@XmlElement(name = "creationDate")
@@ -136,6 +146,10 @@ public class SiteRepresentation extends RestRepresentation {
 		this.lastUpdate = lastUpdate;
 	}
 	
+	public void setItemList(List<SiteUrlRepresentation> urls) {
+		this.urls = urls;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(id, name, url, creationDate, lastUpdate);
@@ -164,6 +178,7 @@ public class SiteRepresentation extends RestRepresentation {
 											   .add("url", url)
 											   .add("created", creationDate)
 											   .add("lastUpdate", lastUpdate)
+											   .add("urls", urls)
 											   .toString();
 	}
 }

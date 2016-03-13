@@ -5,6 +5,8 @@ import static java.util.Objects.requireNonNull;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -16,10 +18,10 @@ import org.bson.conversions.Bson;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.ImmutableList;
 
 import fr.hackchtx01.infra.db.WithId;
 import fr.hackchtx01.infra.util.GenericBuilder;
-import fr.hackchtx01.site.Site;
 
 public class Site implements Bson, WithId {
 	/** Default site ID */
@@ -39,6 +41,7 @@ public class Site implements Bson, WithId {
 	private final LocalDateTime creationDate;
 	/** Last time the site was updated */
 	private final LocalDateTime lastUpdate;
+	private final ImmutableList<SiteUrl> urls;
 	
 	public Site() {
 		id = null;
@@ -46,15 +49,17 @@ public class Site implements Bson, WithId {
 		url = null;
 		creationDate = null;
 		lastUpdate = null;
+		urls = null;
 	}
 	
-	protected Site(UUID id, String name, URI url, LocalDateTime creationDate, LocalDateTime lastUpdate) {
+	protected Site(UUID id, String name, URI url, LocalDateTime creationDate, LocalDateTime lastUpdate, ImmutableList<SiteUrl> urls) {
 		this.id = requireNonNull(id, "Site Id is mandatory");
 		checkArgument(StringUtils.isNotBlank(name), "Invalid site name");
 		this.name = name;
 		this.url = requireNonNull(url, "Site URL is mandatory");
 		this.creationDate = requireNonNull(creationDate, "Creation date is mandatory");
 		this.lastUpdate = requireNonNull(lastUpdate, "Last update date is mandatory");
+		this.urls = requireNonNull(urls, "Urls list is mandatory");
 	}
 	
 	public static class Builder implements GenericBuilder<Site> {
@@ -63,6 +68,7 @@ public class Site implements Bson, WithId {
 		private URI url = DEFAULT_SITE_URI;
 		private LocalDateTime creationDate = LocalDateTime.now();
 		private LocalDateTime lastUpdate = LocalDateTime.now();
+		private List<SiteUrl> urls = new ArrayList<>();
 		
 		private Builder() { }
 		
@@ -89,6 +95,7 @@ public class Site implements Bson, WithId {
             builder.url = otherBuilder.url;
             builder.creationDate = otherBuilder.creationDate;
             builder.lastUpdate = otherBuilder.lastUpdate;
+            builder.urls = otherBuilder.urls;
 
             return builder;
         }
@@ -107,13 +114,15 @@ public class Site implements Bson, WithId {
             builder.url = site.url;
             builder.creationDate = site.creationDate;
             builder.lastUpdate = site.lastUpdate;
+            builder.urls = site.urls;
             
             return builder;
         }
         
         @Override
         public Site build() {
-            return new Site(id, name, url, creationDate, lastUpdate);
+        	ImmutableList<SiteUrl> finalUrls = ImmutableList.<SiteUrl>copyOf(urls);
+            return new Site(id, name, url, creationDate, lastUpdate, finalUrls);
         }
         
         public Builder withId(UUID id) {
@@ -150,6 +159,21 @@ public class Site implements Bson, WithId {
             this.lastUpdate = lastUpdate;
             return this;
         }
+        
+        public Builder withUrls(List<SiteUrl> urls) {
+            this.urls = requireNonNull(urls);
+            return this;
+        }
+        
+        public Builder withSiteUrl(SiteUrl url) {
+        	urls.add(url);
+            return this;
+        }
+        
+        public Builder withoutSiteUrl(SiteUrl url) {
+        	urls.remove(url);
+            return this;
+        }
 	}
 	
 	@Override
@@ -171,6 +195,10 @@ public class Site implements Bson, WithId {
 
 	public LocalDateTime getLastUpdate() {
 		return lastUpdate;
+	}
+	
+	public ImmutableList<SiteUrl> getUrls() {
+		return urls;
 	}
 
 	@Override
@@ -197,6 +225,7 @@ public class Site implements Bson, WithId {
 					.add("id", id)
 					.add("name", name)
 					.add("url", url)
+					.add("urls", urls)
 					.add("created", creationDate)
 					.add("lastUpdate", lastUpdate);
    }
