@@ -146,7 +146,7 @@ public class SiteRepresentation extends RestRepresentation {
 		this.lastUpdate = lastUpdate;
 	}
 	
-	public void setItemList(List<SiteUrlRepresentation> urls) {
+	public void setUrls(List<SiteUrlRepresentation> urls) {
 		this.urls = urls;
 	}
 	

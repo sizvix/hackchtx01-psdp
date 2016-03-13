@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import fr.hackchtx01.site.SiteUrl;
 public class SiteUrlRepresentation {
 	private String type;
 	private String url;
+	private List<FieldRepresentation> fields;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SiteUrlRepresentation.class);
 	
@@ -36,9 +38,10 @@ public class SiteUrlRepresentation {
 	
 	/** Test Purpose only */
 	@Deprecated 
-	public SiteUrlRepresentation(String type, String url) {
+	public SiteUrlRepresentation(String type, String url, List<FieldRepresentation> fields) {
 		this.type = type;
 		this.url = url;
+		this.fields = fields;
 	}
 	
 	public SiteUrlRepresentation(SiteUrl siteUrl) {
@@ -46,6 +49,7 @@ public class SiteUrlRepresentation {
 		requireNonNull(siteUrl);
 		this.type = siteUrl.getType();
 		this.url = siteUrl.getUrl().toString();
+		this.fields = FieldRepresentation.extractFieldsRepresentations(siteUrl.getFields());
 	}
 	
 	public static SiteUrl toSiteUrl(SiteUrlRepresentation representation) {
@@ -53,7 +57,8 @@ public class SiteUrlRepresentation {
 		
 		SiteUrl.Builder siteUrlBuilder = SiteUrl.Builder.createDefault()
 						   .withType(representation.type)
-						   .withUrl(URI.create(representation.url));
+						   .withUrl(URI.create(representation.url))
+						   .withFields(FieldRepresentation.toFields(representation.fields));
 		
 		SiteUrl site;
 		try {
@@ -76,12 +81,22 @@ public class SiteUrlRepresentation {
 		return url;
 	}
 	
+	@XmlElementWrapper(name = "fields")
+	@XmlElement(name = "field")
+	public List<FieldRepresentation> getFields() {
+		return fields;
+	}
+	
 	public void setType(String type) {
 		this.type = type;
 	}
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	
+	public void setFields(List<FieldRepresentation> fields) {
+		this.fields = fields;
 	}
 	
 	public static  List<SiteUrlRepresentation> extractUrlsRepresentations(ImmutableList<SiteUrl> urls) {

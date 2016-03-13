@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import fr.hackchtx01.infra.db.mongo.MongoDocumentConverter;
 import fr.hackchtx01.infra.util.helper.DateHelper;
+import fr.hackchtx01.site.Field;
 import fr.hackchtx01.site.Site;
 import fr.hackchtx01.site.SiteUrl;
 
@@ -24,6 +25,7 @@ public class SiteMongoConverter extends MongoDocumentConverter<Site> {
     public static final String FIELD_LAST_UPDATE = "lastUpdate";
     public static final String FIELD_URLS = "urls";
     public static final String FIELD_URL_TYPE = "type";
+    public static final String FIELD_FIELDS = "fields";
     
     public SiteMongoConverter() {
 		super();
@@ -62,7 +64,9 @@ public class SiteMongoConverter extends MongoDocumentConverter<Site> {
 		@SuppressWarnings("unchecked")
 		List<Document> array = (List<Document>) doc.get(FIELD_URLS);
 		List<SiteUrl> urls = new ArrayList<SiteUrl>();
-		array.forEach(url -> urls.add(extractUrl(url)));
+		if (array != null) {
+			array.forEach(url -> urls.add(extractUrl(url)));
+		}
 		return urls;
 	}
 	
@@ -73,10 +77,36 @@ public class SiteMongoConverter extends MongoDocumentConverter<Site> {
 		
         String type = doc.getString(FIELD_URL_TYPE);
         URI url = URI.create(doc.getString(FIELD_URL));
+        List<Field> fields = extractFields(doc);
         
         return SiteUrl.Builder.createDefault()
         				   .withType(type)
         				   .withUrl(url)
+        				   .withFields(fields)
+        				   .build();
+	}
+	
+	private List<Field> extractFields(Document doc) {
+		@SuppressWarnings("unchecked")
+		List<Document> array = (List<Document>) doc.get(FIELD_FIELDS);
+		List<Field> fields = new ArrayList<>();
+		if (array != null) {
+			array.forEach(field -> fields.add(extractField(field)));
+		}
+		return fields;
+	}
+	
+	private Field extractField(Document doc) {
+		if (doc == null) {
+			return null;
+		}
+		
+        String type = doc.getString(FIELD_URL_TYPE);
+        String name = doc.getString(FIELD_NAME);
+        
+        return Field.Builder.createDefault()
+        				   .withType(type)
+        				   .withName(name)
         				   .build();
 	}
 
@@ -108,7 +138,23 @@ public class SiteMongoConverter extends MongoDocumentConverter<Site> {
 		}
 		
 		return new Document(FIELD_URL_TYPE, url.getType())
-				.append(FIELD_URL, url.getUrl().toString());
+				.append(FIELD_URL, url.getUrl().toString())
+				.append(FIELD_FIELDS, getFieldArray(url.getFields()));
+	}
+	
+	protected static List<Document> getFieldArray(ImmutableList<Field> fields) {
+		List<Document> fieldArray = new ArrayList<>();
+		fields.forEach(field -> fieldArray.add(toDocument(field)));
+		return fieldArray;
+	}
+	
+	public static Document toDocument(Field field) {
+		if (field == null) {
+			return new Document();
+		}
+		
+		return new Document(FIELD_URL_TYPE, field.getType())
+				.append(FIELD_NAME, field.getName());
 	}
 	
 	@Override
