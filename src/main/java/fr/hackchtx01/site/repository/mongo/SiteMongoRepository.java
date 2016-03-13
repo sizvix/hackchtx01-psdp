@@ -10,6 +10,7 @@ import static fr.hackchtx01.site.repository.SiteRepositoryErrorMessage.PROBLEM_U
 import static fr.hackchtx01.site.repository.mongo.SiteMongoConverter.FIELD_URL;
 import static fr.hackchtx01.site.repository.mongo.SiteMongoConverter.FIELD_URLS;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.bson.Document;
@@ -17,6 +18,7 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.MongoException;
@@ -108,5 +110,18 @@ public class SiteMongoRepository extends SiteRepository {
 		} catch(MongoException e) {
 			MongoRepositoryHelper.handleMongoError(LOGGER, e, PROBLEM_CREATION_SITE_URL);
 		}
+	}
+
+	@Override
+	protected Site processFindByURL(String host) {
+		String rege = "^http[s]{0,1}:\\/\\/"+host.replaceAll("\\.", "\\.");
+		Document filter = new Document(SiteMongoConverter.FIELD_URL, new Document("$regex", rege ));
+		List<Site> sites = Lists.newArrayList();
+		try {
+			siteCollection.find().filter(filter).into(sites);
+		} catch(MongoException e) {
+			MongoRepositoryHelper.handleMongoError(LOGGER, e, PROBLEM_CREATION_SITE_URL);
+		}
+		return sites.isEmpty()? null : sites.get(0) ;
 	}
 }

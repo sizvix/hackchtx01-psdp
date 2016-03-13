@@ -4,9 +4,11 @@ import static fr.hackchtx01.infra.rest.error.Level.INFO;
 import static fr.hackchtx01.infra.util.error.RepositoryErrorCode.NOT_FOUND;
 import static fr.hackchtx01.site.resource.SiteResourceErrorMessage.SITE_NOT_FOUND;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +118,16 @@ public static final Logger LOGGER = LoggerFactory.getLogger(SiteRepository.class
 		processAddUrl(siteId, urlToCreate);
 	}
 	
+	public final Site findByURL(URI url) {
+		if(url == null){
+			LOGGER.warn("Site URL creation asked with null site ID");
+			return null ;
+		}
+		return processFindByURL(url.getHost());
+	}
+	
+	protected abstract Site processFindByURL(String string);
+
 	/**
 	 * Create a new site
 	 * @param siteToCreate

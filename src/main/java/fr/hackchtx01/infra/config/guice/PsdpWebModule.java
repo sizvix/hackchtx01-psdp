@@ -12,6 +12,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.servlet.RequestScoped;
 import com.google.inject.servlet.ServletModule;
+import com.thetransactioncompany.cors.CORSFilter;
 
 import fr.hackchtx01.infra.config.filter.RequestScopeFilter;
 import fr.hackchtx01.user.User;
@@ -30,6 +31,10 @@ public class PsdpWebModule extends ServletModule {
 		bind(HttpServletDispatcher.class).in(Singleton.class);
 		serve("/rest").with(HttpServletDispatcher.class);
 		serve("/rest/*").with(HttpServletDispatcher.class);
+
+		//allow CORS
+		bind(CORSFilter.class).in(Singleton.class);
+		filter("/", "/*").through(CORSFilter.class);
 		
 		filter("/rest/api", "/rest/api/*", "/rest/auth", "/rest/auth/*").through(GuiceShiroFilter.class);
 		

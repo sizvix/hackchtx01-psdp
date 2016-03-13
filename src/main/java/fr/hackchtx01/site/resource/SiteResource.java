@@ -26,6 +26,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -55,6 +58,7 @@ public class SiteResource extends RestAPI {
 	/** Currently connected site */
 	private final User connectedUser;
 	private final SiteRepository siteRepo;
+	public static final Logger LOGGER = LoggerFactory.getLogger(SiteResource.class);
 	
 	@Inject
 	public SiteResource(@Named(CONNECTED_USER) User connectedUser, SiteRepository siteRepo) {
@@ -108,7 +112,7 @@ public class SiteResource extends RestAPI {
         URI location = ub.path(siteCreated.getId().toString()).build();
 		return Response.created(location).entity(createdSiteRepresentation).build();
 	}
-	
+
 	@GET
 	@Path("/{siteId}")
 	@ApiOperation(value = "Get site by Id", authorizations = { @Authorization(value = "oauth2", scopes = {})}, notes = "This can only be done by the logged in site.", response = SiteRepresentation.class)
@@ -117,7 +121,25 @@ public class SiteResource extends RestAPI {
 		@ApiResponse(code = 400, message = "Invalid site Id"),
 		@ApiResponse(code = 404, message = "Site not found") })
 	public Response getById(@PathParam("siteId") @ApiParam(value = "Site identifier", required = true) String siteIdStr) {
+		System.out.println(siteIdStr);
 		Site foundSite = findSiteById(siteIdStr);
+		SiteRepresentation foundSiteRepresentation = new SiteRepresentation(foundSite, getUriInfo());
+		return Response.ok().entity(foundSiteRepresentation).build();
+	}
+	
+	@GET
+	@Path("/url/{url}")
+	@ApiOperation(value = "Get site by URL", authorizations = { @Authorization(value = "oauth2", scopes = {})}, notes = "This can only be done by the logged in site.", response = SiteRepresentation.class)
+	@ApiResponses(value = {
+		@ApiResponse(code = 200, message = "Found site"),
+		@ApiResponse(code = 400, message = "Invalid site URL"),
+		@ApiResponse(code = 404, message = "Site not found") })
+	public Response getByURL(@PathParam("url") @ApiParam(value = "Site URL", required = true) String siteURLStr) {
+		System.out.println(siteURLStr);
+		URI url = URI.create(siteURLStr);
+		System.out.println(url.toString());
+		Site foundSite = siteRepo.findByURL(url);
+		ensureFoundSite(foundSite);
 		SiteRepresentation foundSiteRepresentation = new SiteRepresentation(foundSite, getUriInfo());
 		return Response.ok().entity(foundSiteRepresentation).build();
 	}
@@ -160,6 +182,7 @@ public class SiteResource extends RestAPI {
 		@ApiResponse(code = 404, message = "Site not found")})
 	public Response create(@PathParam("siteId") @ApiParam(value = "Site identifier", required = true) String siteIdStr,
 						   @ApiParam(value = "Site Url to create", required = true) SiteUrlRepresentation urlToCreate) {
+		System.out.println(siteIdStr);
 		UUID siteId = ResourceUtil.getIdfromParam("siteId", siteIdStr);
 		SiteUrl createdUrl= SiteUrlRepresentation.toSiteUrl(urlToCreate);
 		
